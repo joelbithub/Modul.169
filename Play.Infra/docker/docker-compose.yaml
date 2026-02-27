@@ -1,0 +1,153 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodbdata:/data/db
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=sml12345
+    depends_on:
+      - mongo
+    ports:
+      - "8080:8081"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  seq:
+    image: datalust/seq
+    container_name: seq
+    environment:
+      - ACCEPT_EULA=Y
+      # Admin Password: seqadmin123
+      - SEQ_FIRSTRUN_ADMINPASSWORDHASH=SqNnMCBMQGAqy3O7yHDFjTaK0BXWpmF1UdGDoG0s6i0=
+    ports:
+      - "8085:80"
+      - "5341:5341"
+
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "6831:6831/udp"
+      - "4317:4317"
+      - "4318:4318"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SERVER_HTTP_PORT=4000
+    depends_on:
+      - prometheus
+    ports:
+      - "4000:4000"
+
+  play.identity:
+    image: play.identity
+    container_name: identity
+    environment:
+      - MongoDbSettings__ConnectionString=mongodb://mongo:27017
+      - RabbitMQSettings__Host=rabbitmq
+      - SeqSettings__ServerUrl=http://seq:5341
+    depends_on:
+      - mongo
+      - rabbitmq
+    ports:
+      - "5003:5003"
+
+  play.catalog:
+    image: play.catalog
+    container_name: catalog
+    environment:
+      - MongoDbSettings__ConnectionString=mongodb://mongo:27017
+      - RabbitMQSettings__Host=rabbitmq
+      - IdentitySettings__Authority=http://play.identity:5003
+      - SeqSettings__ServerUrl=http://seq:5341
+      - JaegerSettings__AgentHost=jaeger
+    depends_on:
+      - mongo
+      - rabbitmq
+      - play.identity
+    ports:
+      - "5001:5001"
+
+  play.inventory:
+    image: play.inventory
+    container_name: inventory
+    environment:
+      - MongoDbSettings__ConnectionString=mongodb://mongo:27017
+      - RabbitMQSettings__Host=rabbitmq
+      - IdentitySettings__Authority=http://play.identity:5003
+      - SeqSettings__ServerUrl=http://seq:5341
+      - JaegerSettings__AgentHost=jaeger
+    depends_on:
+      - mongo
+      - rabbitmq
+      - play.identity
+    ports:
+      - "5004:5004"
+
+  play.trading:
+    image: play.trading
+    container_name: trading
+    environment:
+      - MongoDbSettings__ConnectionString=mongodb://mongo:27017
+      - RabbitMQSettings__Host=rabbitmq
+      - IdentitySettings__Authority=http://play.identity:5003
+      - CatalogServiceSettings__BaseAddress=http://play.catalog:5001
+      - InventoryServiceSettings__BaseAddress=http://play.inventory:5004
+      - SeqSettings__ServerUrl=http://seq:5341
+      - JaegerSettings__AgentHost=jaeger
+    depends_on:
+      - mongo
+      - rabbitmq
+      - play.identity
+      - play.catalog
+      - play.inventory
+    ports:
+      - "5007:5007"
+
+  play.frontend:
+    image: play.frontend
+    container_name: frontend
+    environment:
+      - IDENTITY_PROVIDER_URL=http://host.docker.internal:5003
+      - CATALOG_URL=http://host.docker.internal:5001
+      - TRADING_URL=http://host.docker.internal:5007
+    depends_on:
+      - play.identity
+      - play.catalog
+      - play.trading
+    ports:
+      - "5008:80"
+
+#------------
+volumes:
+  mongodbdata:

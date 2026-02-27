@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "play.catalog"
+    static_configs:
+      - targets: ["play.catalog:5001"]
+
+  - job_name: "play.inventory"
+    static_configs:
+      - targets: ["play.inventory:5004"]
+
+  - job_name: "play.identity"
+    static_configs:
+      - targets: ["play.identity:5003"]
+
+  - job_name: "play.trading"
+    static_configs:
+      - targets: ["play.trading:5007"]
+
+  - job_name: "play.frontend"
+    static_configs:
+      - targets: ["play.frontend:80"]

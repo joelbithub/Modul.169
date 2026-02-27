@@ -66,6 +66,21 @@ nano html/index.html
 docker compose down
 ```
 
+### Image in ein Repository pushen (Docker Hub)
+
+```bash
+# Image bauen und mit Docker-Hub-Benutzername taggen
+docker build -t joelbithub/modul169-webserver:latest .
+
+# Bei Docker Hub anmelden
+docker login
+
+# Image in das Repository pushen
+docker push joelbithub/modul169-webserver:latest
+```
+
+![Docker Push Screenshot](https://github.com/user-attachments/assets/249055f0-b521-4e09-920a-94fada3ee698)
+
 ---
 
 ### Funktionsweise der Persistenz

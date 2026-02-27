@@ -5,42 +5,207 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modul 169 – Webserver</title>
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Segoe UI', Arial, sans-serif;
             min-height: 100vh;
-            margin: 0;
-            background-color: #f0f4f8;
-        }
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 2rem 3rem;
-            text-align: center;
-            max-width: 480px;
-        }
-        h1 { color: #2d3748; margin-bottom: 0.5rem; }
-        p  { color: #718096; }
-        .badge {
-            display: inline-block;
-            background: #48bb78;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #fff;
-            border-radius: 4px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.85rem;
-            margin-top: 1rem;
+            overflow-x: hidden;
+        }
+
+        /* Animated floating blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            animation: float 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .blob-1 { width: 420px; height: 420px; background: #7f5af0; top: -100px; left: -120px; animation-delay: 0s; }
+        .blob-2 { width: 320px; height: 320px; background: #2cb67d; bottom: -80px; right: -80px; animation-delay: 3s; }
+        .blob-3 { width: 260px; height: 260px; background: #ff6b6b; top: 40%; left: 60%; animation-delay: 5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50%       { transform: translate(20px, -30px) scale(1.05); }
+        }
+
+        /* Card */
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 3rem 3.5rem;
+            text-align: center;
+            max-width: 560px;
+            width: 90%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.7s ease both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            animation: spin 1s ease 0.7s both;
+        }
+        @keyframes spin {
+            from { transform: rotate(-15deg) scale(0.7); opacity: 0; }
+            to   { transform: rotate(0deg) scale(1);   opacity: 1; }
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #7f5af0, #2cb67d, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.75);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.75rem;
+        }
+
+        /* Stats row */
+        .stats {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.75rem;
+        }
+        .stat {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            min-width: 110px;
+        }
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2cb67d;
+        }
+        .stat-label {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 2px;
+        }
+
+        /* Status badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: linear-gradient(90deg, #2cb67d, #38ef7d);
+            color: #fff;
+            border-radius: 999px;
+            padding: 0.45rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            box-shadow: 0 4px 16px rgba(44,182,125,0.45);
+        }
+        .dot {
+            width: 8px; height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1);   opacity: 1; }
+            50%       { transform: scale(1.5); opacity: 0.6; }
+        }
+
+        /* Tech tags */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .tag {
+            font-size: 0.78rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+        }
+
+        footer {
+            position: relative;
+            z-index: 1;
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.3);
         }
     </style>
 </head>
 <body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
     <div class="card">
-        <h1>Hallo, Roman ! 🌍</h1>
-        <p>Diese Webseite wird von einem <strong>Nginx</strong>-Container bereitgestellt.</p>
-        <p>Der Inhalt wird über ein Docker-Volume eingebunden und bleibt auch nach dem Stoppen und Starten des Containers erhalten.</p>
-        <span class="badge">Nginx läuft ✔</span>
+        <span class="logo">🚀</span>
+        <h1>Hallo, Roman!</h1>
+        <p class="subtitle">
+            Diese Webseite wird von einem <strong>Nginx</strong>-Container bereitgestellt.<br>
+            Der Inhalt bleibt dank <strong>Docker Bind-Mount</strong> auch nach dem
+            Stoppen &amp; Starten des Containers erhalten.
+        </p>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">Nginx</div>
+                <div class="stat-label">Webserver</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">Alpine</div>
+                <div class="stat-label">Base Image</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">:8080</div>
+                <div class="stat-label">Host Port</div>
+            </div>
+        </div>
+
+        <span class="badge">
+            <span class="dot"></span>
+            Nginx läuft ✔
+        </span>
+
+        <div class="tags">
+            <span class="tag">Docker</span>
+            <span class="tag">Docker Compose</span>
+            <span class="tag">Bind-Mount Volume</span>
+            <span class="tag">Modul 169</span>
+        </div>
     </div>
+
+    <footer>Modul 169 · Webserver mit Docker &amp; Nginx</footer>
 </body>
 </html>

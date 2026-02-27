@@ -68,6 +68,37 @@ docker compose down
 
 ---
 
+## Auftrag 3 – Docker Image in die Registry pushen
+
+Das Image wird automatisch über einen **GitHub Actions Workflow** (`.github/workflows/docker-publish.yml`) gebaut und in die **GitHub Container Registry (ghcr.io)** gepusht, sobald ein Commit auf den `main`-Branch erfolgt.
+
+### Image manuell bauen und pushen
+
+```bash
+# Image bauen
+docker build -t ghcr.io/joelbithub/modul169-webserver:latest .
+
+# Bei GitHub Container Registry anmelden (Token interaktiv eingeben)
+docker login ghcr.io -u joelbithub
+
+# Image pushen
+docker push ghcr.io/joelbithub/modul169-webserver:latest
+```
+
+### Image aus der Registry herunterladen und starten
+
+```bash
+# Image pullen
+docker pull ghcr.io/joelbithub/modul169-webserver:latest
+
+# Container starten
+docker run -d -p 8080:80 ghcr.io/joelbithub/modul169-webserver:latest
+```
+
+Die Webseite ist danach unter **http://localhost:8080** erreichbar.
+
+---
+
 ### Funktionsweise der Persistenz
 
 | Szenario | Ergebnis |

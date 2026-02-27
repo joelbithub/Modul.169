@@ -1,0 +1,12 @@
+services:
+  webserver:
+    build: .
+    container_name: modul169-webserver
+    ports:
+      - "8080:80"
+    volumes:
+      # Bind-Mount: Das lokale html/-Verzeichnis wird in den Container eingehängt.
+      # ":ro" verhindert, dass Container-Prozesse die Dateien verändern können.
+      # Dateien auf dem Host bleiben jederzeit editierbar und Änderungen sind sofort sichtbar.
+      - ./html:/usr/share/nginx/html:ro
+    restart: unless-stopped
